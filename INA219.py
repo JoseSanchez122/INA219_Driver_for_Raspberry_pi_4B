@@ -92,7 +92,7 @@ class Conf_Reg_class:
         self.bus_voltage_range = bus_voltage_range
         self.shunt_gain = shunt_gain
         self.adc_resolution = adc_resolution
-        self.mode = mode
+        
     
     
     
