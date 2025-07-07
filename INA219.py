@@ -19,7 +19,7 @@ class INA219_class:
         
         #-------bus voltage configuration---------#
         BUS_VOLTAGE_RANGE_16V = 0x00
-        BUS_VOLTAGE_RANGE_32V = 0x2000
+        BUS_VOLTAGE_RANGE_32V = 0x20003
         
         #-------Shunt voltage only--------#
         SHUNT_GAIN_40MV  = 0x00
@@ -28,12 +28,30 @@ class INA219_class:
         SHUNT_GAIN_320MV = 0x1800
         
         #--------Bus ADC Resolution-------#
-        ADC_RESOLUTION_9BITS  = 0x00
-        ADC_RESOLUTION_10BITS = 0x80
-        ADC_RESOLUTION_11BITS = 0x100
-        ADC_RESOLUTION_12BITS = 0x180
+        ADC_RESOLUTION_9BITS  = 0x00	# 84 us
+        ADC_RESOLUTION_10BITS = 0x80	# 148 us
+        ADC_RESOLUTION_11BITS = 0x100	# 276 us
+        ADC_RESOLUTION_12BITS = 0x180	# 532 us
         
-        #-------ADC resolution + 
+        #--------ADC resolution + num of samples averaged--------#
+        ADC_12BITS_2_SAMPLES	= 0x0480
+        ADC_12BITS_4_SAMPLES	= 0x0500
+        ADC_12BITS_8_SAMPLES	= 0x0580
+        ADC_12BITS_16_SAMPLES	= 0x0600
+        ADC_12BITS_32_SAMPLES	= 0x0680
+        ADC_12BITS_64_SAMPLES	= 0x0700
+        ADC_12BITS_128_SAMPLES	= 0x0780
+        
+        #-------operating modes-------#
+        POWER_DOWN 							= 0x00
+        SHUNT_VOLTAGE_TRIGGERED 			= 0x01
+        BUS_VOLTAGE_TIGGERED 				= 0x02
+        SHUNT_AND_BUS_TRIGGERED 			= 0x03
+        ADC_OFF 							= 0x04
+        SHUNT_VOLTAGE_CONTINUOUS 			= 0x05
+        BUS_VOLTAGE_CONTINUOUS 				= 0x06
+        SHUNT_AND_BUS_VOLTAGE_CONTINUOUS 	= 0x07
+        
     
     def Test_Connection(self):
             
@@ -60,10 +78,8 @@ class INA219_class:
         with SMBus(1) as bus:
             bus.write_word_data(self.INA219_ADDRESS, Register, value_swapped)
     
-    def Conf(self,
-             RST=0X00,
-             bus_vol_range=):
-        
+    def Conf_INA219(self, RST=0X00, ):
+        Conf_Reg = 
     
     
     
