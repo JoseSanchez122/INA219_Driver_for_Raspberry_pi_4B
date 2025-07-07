@@ -37,6 +37,7 @@ class INA219:
     SHUNT_VOLTAGE_CONTINUOUS 			= 0x05
     BUS_VOLTAGE_CONTINUOUS 				= 0x06
     SHUNT_AND_BUS_VOLTAGE_CONTINUOUS 	= 0x07
+    
         
     def __init__(self, _INA219_ADDRESS, _R_shunt, _Current_LSB):
         #-------parameters for configuration---------#
@@ -76,23 +77,40 @@ class INA219:
         value_swapped = ((value & 0xFF) << 8) | ((value >> 8) & 0xFF)
         with SMBus(1) as bus:
             bus.write_word_data(self.INA219_ADDRESS, Register, value_swapped)
-    
-    def Conf_INA219(self, Config_Reg):
+            
+    def Calculate_Cal_value(self, Config_Reg):
+        Vshunt_max = 0
+        
+        if Config_Reg.shunt_gain == INA219.SHUNT_GAIN_40MV:
+            Vshunt_max = 0.04
+        elif Config_Reg.shunt_gain == INA219.SHUNT_GAIN_80MV:
+            Vshunt_max = 0.08
+        elif Config_Reg.shunt_gain == INA219.SHUNT_GAIN_160MV:
+            Vshunt_max = 0.16
+        elif Config_Reg.shunt_gain == INA219.SHUNT_GAIN_320MV:
+            Vshunt_max = 0.32
+        
+    def CONFIG_INA219(self, configuration):
         Reg_val = (
-            Config_Reg.bus_voltage_range |
-            Config_Reg.shunt_gain |
-            Config_Reg. adc_resolution |
-            Config_Reg. mode
+            configuration.bus_voltage_range |
+            configuration.shunt_gain |
+            configuration. adc_resolution |
+            configuration. mode
         )
         
         self.Write_REG(self.CONFIG_REG, Reg_val)
+        self.Write_REG(self.CALIBRATION_REG, configuration.Cal_value)
         
-class Conf_Reg_class:
-    def __init__(self, bus_voltage_range, shunt_gain, adc_resolution, mode):
+        
+class INA219_CONFIG:
+    def __init__(self, bus_voltage_range, shunt_gain, adc_resolution, mode, Cal_value):
         self.bus_voltage_range = bus_voltage_range
         self.shunt_gain = shunt_gain
         self.adc_resolution = adc_resolution
+        self.mode = mode
+        self.Cal_value = Cal_value
         
+
     
     
     
