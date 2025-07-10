@@ -13,20 +13,32 @@ class INA219:
     SHUNT_GAIN_160MV = 0x1000
     SHUNT_GAIN_320MV = 0x1800
     
-    #--------Bus ADC Resolution-------#
-    ADC_RESOLUTION_9BITS  = 0x00	# 84 us
-    ADC_RESOLUTION_10BITS = 0x80	# 148 us
-    ADC_RESOLUTION_11BITS = 0x100	# 276 us
-    ADC_RESOLUTION_12BITS = 0x180	# 532 us
+    #--------SHUNT ADC resolution + num of samples averaged--------#
+    SHUNT_ADC_RES_9BITS  = 0x00	# 84 us
+    SHUNT_ADC_RES_10BITS = 0x08	# 148 us
+    SHUNT_ADC_RES_11BITS = 0x10	# 276 us
+    SHUNT_ADC_RES_12BITS = 0x18	# 532 us
+    SHUNT_ADC_12BITS_2_SAMP   = 0x48
+    SHUNT_ADC_12BITS_4_SAMP	= 0x50
+    SHUNT_ADC_12BITS_8_SAMP	= 0x58
+    SHUNT_ADC_12BITS_16_SAM	= 0x60
+    SHUNT_ADC_12BITS_32_SAM	= 0x68
+    SHUNT_ADC_12BITS_64_SAMP	= 0x70
+    SHUNT_ADC_12BITS_128_SAMP	= 0x78
+
     
-    #--------ADC resolution + num of samples averaged--------#
-    ADC_12BITS_2_SAMPLES	= 0x0480
-    ADC_12BITS_4_SAMPLES	= 0x0500
-    ADC_12BITS_8_SAMPLES	= 0x0580
-    ADC_12BITS_16_SAMPLES	= 0x0600
-    ADC_12BITS_32_SAMPLES	= 0x0680
-    ADC_12BITS_64_SAMPLES	= 0x0700
-    ADC_12BITS_128_SAMPLES	= 0x0780
+    #--------BUS ADC resolution + num of samples averaged--------#
+    BUS_ADC_RES_9BITS  = 0x00	# 84 us
+    BUS_ADC_RES_10BITS = 0x80	# 148 us
+    BUS_ADC_RES_11BITS = 0x100	# 276 us
+    BUS_ADC_RES_12BITS = 0x180	# 532 us
+    BUS_ADC_12BITS_2_SAMP   = 0x0480
+    BUS_ADC_12BITS_4_SAMP	= 0x0500
+    BUS_ADC_12BITS_8_SAMP	= 0x0580
+    BUS_ADC_12BITS_16_SAM	= 0x0600
+    BUS_ADC_12BITS_32_SAM	= 0x0680
+    BUS_ADC_12BITS_64_SAMP	= 0x0700
+    BUS_ADC_12BITS_128_SAMP	= 0x0780
     
     #-------operating modes-------#
     POWER_DOWN 							= 0x00
@@ -50,11 +62,10 @@ class INA219:
         self.SHUNT_VOLTAGE_REG = 0X01
         self.BUS_VOLTAGE_REG = 0x02
         self.POWER_REG = 0X03
-        self.CURRENT = 0X04
+        self.CURRENT_REG = 0X04
         self.CALIBRATION_REG = 0x05
     
     def Test_Connection(self):
-            
         try:
             with SMBus(1) as bus:
                 reg = bus.read_word_data(self.INA219_ADDRESS, 0x00)
@@ -94,19 +105,45 @@ class INA219:
         Reg_val = (
             configuration.bus_voltage_range |
             configuration.shunt_gain |
-            configuration. adc_resolution |
-            configuration. mode
+            configuration.bus_adc_conf |
+            configuration.shunt_adc_conf |
+            configuration.mode
         )
         
         self.Write_REG(self.CONFIG_REG, Reg_val)
         self.Write_REG(self.CALIBRATION_REG, configuration.Cal_value)
+    
+    def Get_Raw_Current(self):
+        raw_value = self.Read_REG(self.CURRENT_REG)
+        uAmp_value = raw_value*self.Current_LSB
+        return uAmp_value
+        
+    def Get_Current_nA(self):
+        raw_value = self.Get_Raw_Current()
+        uAmp_value = raw_value*1e9
+        return uAmp_value
+    
+    def Get_Current_uA(self):
+        raw_value = self.Get_Raw_Current()
+        uAmp_value = raw_value*1e6
+        return uAmp_value
+    
+    def Get_Current_mA(self):
+        raw_value = self.Get_Raw_Current()
+        uAmp_value = raw_value*1e3
+        return uAmp_value
+    
+    def Get_Current_A(self):
+        raw_value = self.Get_Raw_Current()
+        return raw_value
         
         
 class INA219_CONFIG:
-    def __init__(self, bus_voltage_range, shunt_gain, adc_resolution, mode, Cal_value):
+    def __init__(self, bus_voltage_range, shunt_gain, bus_adc_conf, shunt_adc_conf, mode, Cal_value):
         self.bus_voltage_range = bus_voltage_range
         self.shunt_gain = shunt_gain
-        self.adc_resolution = adc_resolution
+        self.bus_adc_conf = bus_adc_conf
+        self.shunt_adc_conf = shunt_adc_conf
         self.mode = mode
         self.Cal_value = Cal_value
         
